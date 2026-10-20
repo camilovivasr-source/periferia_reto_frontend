@@ -1,0 +1,6 @@
+node_modules
+.git
+.env
+gha-creds-*.json
+
+.runtime-env.json

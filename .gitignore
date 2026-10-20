@@ -1,0 +1,4 @@
+node_modules/
+.env
+*.log
+gha-creds-*.json
