@@ -6,4 +6,4 @@ COPY src ./src
 COPY public ./public
 ENV NODE_ENV=production PORT=8080 BACKEND_AUTH=iam
 EXPOSE 8080
-CMD ["npm","start"]
+CMD ["npm", "start"]

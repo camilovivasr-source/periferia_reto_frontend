@@ -1,26 +1,26 @@
-# Periferia Reto 3 - Frontend
+# Reto 3 · Agente de órdenes de compra SAP — Frontend
 
-**Empieza por [INSTRUCTIVO_CLOUD_RUN.md](INSTRUCTIVO_CLOUD_RUN.md)** para despliegue manual. [ARQUITECTURA.md](ARQUITECTURA.md) explica módulos y trabajo del PRD.
+Chat en HTML/JS sin dependencias de build, servido por un proxy mínimo de Node que reenvía al backend (`periferia_reto_backend`) con la identidad IAM del servicio. Muestra:
+
+- cada **llamada a herramienta** (nombre, argumentos, resultado resumido y detalle desplegable), en vivo por SSE;
+- un **banner de confirmación resaltado** cuando el agente pide confirmar excepciones, con botones "Confirmo" / "No, cancelar" (envían un mensaje inequívoco al chat);
+- respuestas con tablas y listas (render de Markdown seguro: nunca inserta HTML del modelo);
+- el modo del backend (modelo real o "modo práctica sin LLM").
 
 ## Local
-
 ```bash
 npm ci
-npm run doctor
 npm test
-npm start
+# backend en :8080 (otro terminal): npm run dev   |   luego:
+cp .env.example .env && npm start     # http://localhost:3000
 ```
+`npm run smoke:split` levanta el backend compilado en modo práctica y recorre el flujo completo (`BACKEND_DIR=../periferia_reto_backend`).
 
-Copiar .env.example a .env. Backend usa Gemini y requiere clave; para estudiar sin modelo ejecutar npm run dev:practice. Frontend local apunta al backend8080 y usa BACKEND_AUTH=none. Abrir frontend en3000.
+## Variables
+| Variable | Defecto | Descripción |
+|---|---|---|
+| `PORT` | `3000` (`8080` en Cloud Run) | Puerto. |
+| `BACKEND_URL` | `http://127.0.0.1:8080` | Origen del backend. |
+| `BACKEND_AUTH` | `iam` | `iam` (ID token de la identidad de servicio) o `none` (solo local). En Cloud Run debe ser `iam`. |
 
-Acceso de revisor local: local-review-only. Es un código educativo, no usarlo en Cloud Run. Cloud exige secretos distintos y aleatorios; setup-manual.sh los crea.
-
-## Funciones
-
-Dashboard de chat/auditoría, eventos SSE, controles verificables, resumen SAP simulado, justificación obligatoria, aprobación según autoridad y rechazo persistente. Supervisor y retroactividad solo si se configuran políticas explícitas; no existe botón universal de excepción.
-
-## Cloud Run
-
-Backend privado IAM, frontend público con proxy. Puerto8080, Dockerfiles, Secret Manager, Firestore y scripts manuales. GitHub Actions CI no requiere nube; CD está desactivado mientras DEPLOY_ENABLED no sea true.
-
-Los fixtures y reglas son educativos. Falta PRD oficial; la presencia de archivos no certifica aprobación ni retroactividad. No se han probado credenciales Gemini ni despliegue real en tu proyecto. El PDF de primera edición dentro de backend/docs es material conceptual histórico; este instructivo y arquitectura son las referencias actuales.
+El proxy solo expone `/api/chat`, `/api/casos`, `/api/sessions/:id` y la salud; limita tamaño (16 KB) y frecuencia (90/min por IP) y rechaza orígenes cruzados. Despliegue: ver `INSTRUCTIVO_CLOUD_RUN.md`.

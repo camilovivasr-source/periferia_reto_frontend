@@ -1,31 +1,155 @@
-const $=id=>document.getElementById(id),log=$('log'),toolNodes=new Map();let selected='',snapshot='',review=null,busy=false;
-const labels={CREADA:'OC creada',RECHAZADA:'Rechazada',REQUIERE_APROBACION:'Revisión pendiente',LISTA_PARA_CREAR:'Lista para crear'};
-const money=n=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:2}).format(n/100);
-function el(tag,text,className){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;}
-function message(text,kind=''){const d=el('div',text,'msg '+kind);log.append(d);log.scrollTop=log.scrollHeight;}
-async function request(url,body){const r=await fetch(url,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw Error(data.error+(data.details?' · '+data.details.map(x=>x.campo+': '+x.motivo).join('; '):''));return data;}
-function setBusy(value){busy=value;for(const id of ['send','validate','create','approve','reject'])$(id).disabled=value; if(!value)applyActions();}
-function applyActions(){$('approve').disabled=busy||!review?.puedeAprobar;$('reject').disabled=busy||!review?.puedeRechazar;}
-function render(result){snapshot=result.snapshot;review=result.revision;
- $('status').textContent=labels[result.estado]??result.estado;$('status').className='pill '+(result.estado==='RECHAZADA'?'bad':result.estado==='REQUIERE_APROBACION'?'pending':'ok');
- const s=result.resumen;if(s){$('summary').replaceChildren();const title=el('div',undefined,'section-head');title.append(el('h2',s.id),el('span','Fuente: fixtures','pill'));$('summary').append(title);const grid=el('div',undefined,'summary-grid');for(const [key,value,cls]of [['Proveedor / NIT',s.nit,''],['Centro de costo',s.centroCosto,''],['Base',money(s.baseCentavos),''],['IVA',money(s.ivaCentavos),''],['Pago',s.condicionPago,''],['Fecha solicitud',s.fechaSolicitud,''],['Total',money(s.totalCentavos),'total']]){const d=el('div',undefined,'datum '+cls);d.append(el('small',key),el('b',value));grid.append(d);}$('summary').append(grid);}
- $('controls').replaceChildren();for(const c of result.controles??[]){const kind=c.resultado==='CUMPLE'?'ok':c.resultado==='BLOQUEA'?'bad':'pending',li=el('li'),txt=el('div',undefined,'control-text');txt.append(el('b',c.codigo),el('small',c.motivo));li.append(el('span',c.resultado==='CUMPLE'?'✓':c.resultado==='BLOQUEA'?'×':'!','control-icon '+kind),txt);$('controls').append(li);}
- $('decision').hidden=result.estado==='CREADA';$('reviewer').textContent=review?.actorId??'Sin sesión';$('decision-note').textContent=review?.motivo??'Inicia sesión para revisar. La autoridad se valida en servidor.';applyActions();
- $('sap').replaceChildren();if(result.sap){$('sap').append(el('div',result.sap.oc,'oc-number'),el('p','Registro confirmado por el adaptador SAP simulado.','sap-note'));}else $('sap').textContent='Sin orden registrada. No se ha ejecutado una llamada BAPI ni OData.';
- $('audit').replaceChildren();for(const a of result.auditoria??[]){const d=el('div',undefined,'audit-event');d.append(el('b',a.action),el('small',a.actorId+' · '+new Date(a.fecha).toLocaleString()),el('div',a.justificacion??a.oc??''));$('audit').append(d);}if(!result.auditoria?.length)$('audit').textContent='Sin acciones persistidas para esta solicitud.';
+import { renderMarkdown } from './markdown.js';
+
+const $ = (id) => document.getElementById(id);
+const mensajes = $('mensajes'), form = $('form'), texto = $('texto'), enviar = $('enviar'), confirmacion = $('confirmacion');
+
+let sessionId = null;
+try { sessionId = sessionStorage.getItem('sessionId'); } catch { /* almacenamiento bloqueado */ }
+const nuevaSesion = () => {
+  sessionId = (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`).replace(/[^A-Za-z0-9_-]/g, '');
+  try { sessionStorage.setItem('sessionId', sessionId); } catch { /* ignorar */ }
+};
+const sesionPrevia = !!sessionId && sessionId.length >= 8;
+if (!sesionPrevia) nuevaSesion();
+
+const el = (tag, clase, contenido) => { const e = document.createElement(tag); if (clase) e.className = clase; if (contenido !== undefined) e.textContent = contenido; return e; };
+const bajar = () => { mensajes.scrollTop = mensajes.scrollHeight; };
+
+function burbujaUsuario(t) { const m = el('div', 'msg usuario', t); mensajes.append(m); bajar(); }
+
+function tarjetaLlamada(l, enCurso = false) {
+  const d = el('details', `llamada ${enCurso ? 'curso' : l.ok ? 'ok' : 'fallo'}`);
+  d.dataset.id = l.id;
+  const s = el('summary');
+  s.append(el('span', 'nombre', `${enCurso ? '⏳' : l.ok ? '✓' : '✗'} ${l.nombre}`), el('span', 'res', enCurso ? 'ejecutando…' : l.resumen));
+  if (!enCurso) s.append(el('span', 'ms', `${l.ms} ms`));
+  d.append(s);
+  const pre = el('pre');
+  pre.textContent = JSON.stringify(enCurso ? { argumentos: l.args } : { argumentos: l.args, resultado: l.resultado }, null, 2);
+  d.append(pre);
+  return d;
 }
-async function refresh(){if(!selected)return;try{render(await request('/api/solicitudes/'+selected));}catch(e){snapshot='';review=null;$('status').textContent='Datos no disponibles';$('status').className='pill bad';$('summary').replaceChildren(el('p',e.message,'muted'));$('controls').replaceChildren();$('decision').hidden=true;$('sap').textContent='No hay evidencia vigente para la selección';message(e.message,'error');}}
-function toolEvent(event){if(event.type==='tool_start'){if(!toolNodes.size)$('tools').replaceChildren();const d=el('div',undefined,'tool'),head=el('div'),time=el('small','Ejecutando…');head.append(el('b',event.name),time);const detail=el('details'),summary=el('summary','Entrada / resultado'),pre=el('pre',JSON.stringify({entrada:event.args},null,2));detail.append(summary,pre);d.append(head,detail);$('tools').prepend(d);toolNodes.set(event.id,{d,time,pre,args:event.args});$('tool-count').textContent=toolNodes.size;}else if(event.type==='tool_end'){const n=toolNodes.get(event.id);if(n){n.time.textContent=event.durationMs+' ms';n.pre.textContent=JSON.stringify({entrada:n.args,resultado:event.result},null,2);}}}
-async function chat(text){if(busy)return;message(text,'user');setBusy(true);try{
- const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json',Accept:'text/event-stream'},body:JSON.stringify({message:text})});if(!r.ok){const e=await r.json();throw Error(e.error);}
- const reader=r.body.getReader(),decoder=new TextDecoder();let buffer='';
- while(true){const {value,done}=await reader.read();buffer+=decoder.decode(value??new Uint8Array(),{stream:!done});let at;while((at=buffer.indexOf('\n\n'))>=0){const packet=buffer.slice(0,at);buffer=buffer.slice(at+2);for(const line of packet.split('\n')){if(!line.startsWith('data: '))continue;const event=JSON.parse(line.slice(6));if(event.type==='tool_start'||event.type==='tool_end')toolEvent(event);if(event.type==='complete')message(event.reply);if(event.type==='error')message(event.error,'error');}}if(done)break;}
- }catch(e){message(e.message,'error');}finally{await refresh();setBusy(false);}}
-$('case').onchange=()=>{selected=$('case').value;review=null;snapshot='';$('reason').value='';refresh();};
-$('validate').onclick=()=>selected?chat('Valida '+selected+' y explica los controles.'):message('Selecciona una solicitud.','error');
-$('create').onclick=()=>selected?chat('Crea la orden de compra de '+selected+' si cumple todos los controles.'):message('Selecciona una solicitud.','error');
-$('form').onsubmit=e=>{e.preventDefault();const text=$('input').value;const id=text.match(/\bsol-\d{3}\b/)?.[0];if(id){selected=id;$('case').value=id;}$('input').value='';chat(text);};
-for(const [button,route] of [['approve','confirmar'],['reject','rechazar']])$(button).onclick=async()=>{const justificacion=$('reason').value.trim();if(justificacion.length<10){message('Escribe una justificación de al menos 10 caracteres.','error');return;}setBusy(true);try{await request('/api/'+route,{solicitudId:selected,snapshot,justificacion});message(route==='confirmar'?'Aprobación registrada. La creación requiere una acción posterior.':'Rechazo registrado; creación bloqueada.');$('reason').value='';}catch(e){message(e.message,'error');}finally{await refresh();setBusy(false);}};
-$('login-open').onclick=()=>$('login-dialog').showModal();$('login-close').onclick=()=>$('login-dialog').close();
-$('login-form').onsubmit=async e=>{e.preventDefault();try{const s=await request('/api/operator/login',{code:$('code').value});$('code').value='';$('login-error').textContent='';$('login-open').textContent='Revisor: '+s.actorId;$('login-dialog').close();await refresh();}catch(e){$('login-error').textContent=e.message;}};
-(async()=>{try{const [health,cases,session]=await Promise.all([request('/api/backend-health'),request('/api/solicitudes'),request('/api/operator/session')]);$('mode').textContent=health.mode==='LLM'?'Gemini · '+health.model:'Práctica sin LLM';for(const id of cases.ids)$('case').append(new Option(id,id));if(session.actorId)$('login-open').textContent='Revisor: '+session.actorId;}catch(e){$('mode').textContent='Backend no disponible';message(e.message,'error');}})();
+
+function burbujaAgente() {
+  const caja = el('div', 'msg agente');
+  const llamadas = el('div', 'llamadas');
+  const cuerpo = el('div', 'cuerpo');
+  caja.append(llamadas, cuerpo);
+  mensajes.append(caja);
+  return { caja, llamadas, cuerpo };
+}
+
+function mostrarConfirmacion(pendientes) {
+  confirmacion.replaceChildren();
+  if (!pendientes?.length) { confirmacion.hidden = true; return; }
+  confirmacion.hidden = false;
+  for (const p of pendientes) {
+    const bloque = el('div');
+    bloque.append(el('strong', 'titulo', `Confirmación pendiente · ${p.caso}`));
+    const ul = el('ul');
+    for (const c of p.confirmaciones) { const li = el('li'); li.append(el('strong', undefined, `${c.codigo}: `), c.detalle); ul.append(li); }
+    const acciones = el('div', 'acciones');
+    const si = el('button', undefined, `Confirmo crear la OC de ${p.caso}`);
+    const no = el('button', 'peligro', 'No, cancelar');
+    si.type = no.type = 'button';
+    si.addEventListener('click', () => mandar(`Confirmo: crea la OC de ${p.caso} con las excepciones indicadas.`));
+    no.addEventListener('click', () => mandar(`No, cancela ${p.caso}.`));
+    acciones.append(si, no);
+    bloque.append(ul, acciones);
+    confirmacion.append(bloque);
+  }
+}
+
+function pintarTurno(burbuja, r) {
+  burbuja.cuerpo.replaceChildren(renderMarkdown(document, r.reply));
+  mostrarConfirmacion(r.pendientes);
+}
+
+async function mandar(mensaje) {
+  const t = mensaje.trim();
+  if (!t || enviar.disabled) return;
+  burbujaUsuario(t);
+  texto.value = '';
+  enviar.disabled = true;
+  confirmacion.hidden = true;
+  const b = burbujaAgente();
+  b.cuerpo.append(el('span', 'pensando', 'Pensando…'));
+  bajar();
+  try {
+    const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' }, body: JSON.stringify({ sessionId, message: t }) });
+    if (!r.ok || !r.body) {
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.detalles?.join('; ') || e.error || `Error HTTP ${r.status}`);
+    }
+    const lector = r.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '', final = null;
+    for (;;) {
+      const { value, done } = await lector.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let corte;
+      while ((corte = buf.indexOf('\n\n')) >= 0) {
+        const bloque = buf.slice(0, corte); buf = buf.slice(corte + 2);
+        const linea = bloque.split('\n').find((x) => x.startsWith('data: '));
+        if (!linea) continue;
+        const ev = JSON.parse(linea.slice(6));
+        if (ev.tipo === 'tool_start') { b.llamadas.append(tarjetaLlamada({ id: ev.id, nombre: ev.nombre, args: ev.args }, true)); }
+        else if (ev.tipo === 'tool_end') { const previa = b.llamadas.querySelector(`[data-id="${CSS.escape(ev.llamada.id)}"]`); const nueva = tarjetaLlamada(ev.llamada); previa ? previa.replaceWith(nueva) : b.llamadas.append(nueva); }
+        else if (ev.tipo === 'complete') final = ev;
+        else if (ev.tipo === 'error') throw new Error(ev.error);
+        bajar();
+      }
+    }
+    if (!final) throw new Error('La respuesta se cortó antes de terminar. Intenta de nuevo.');
+    pintarTurno(b, final);
+  } catch (e) {
+    b.caja.classList.add('error');
+    b.cuerpo.replaceChildren(document.createTextNode(`No pude completar el turno: ${e.message}. La sesión sigue activa; puedes reintentar.`));
+  } finally {
+    enviar.disabled = false;
+    texto.focus();
+    bajar();
+  }
+}
+
+async function restaurar() {
+  try {
+    const r = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`);
+    if (!r.ok) return;
+    const { historial } = await r.json();
+    for (const h of historial) {
+      if (h.rol === 'user') burbujaUsuario(h.contenido);
+      else {
+        const b = burbujaAgente();
+        for (const l of h.toolCalls ?? []) b.llamadas.append(tarjetaLlamada(l));
+        b.cuerpo.replaceChildren(renderMarkdown(document, h.contenido));
+      }
+    }
+    bajar();
+  } catch { /* sin historial */ }
+}
+
+async function iniciar() {
+  try {
+    const salud = await (await fetch('/api/backend-health')).json();
+    const chip = $('modo');
+    chip.textContent = salud.modo === 'LLM' ? `${salud.modelo}` : 'modo práctica (sin LLM)';
+    chip.className = `chip ${salud.modo === 'LLM' ? 'llm' : 'practica'}`;
+  } catch { $('modo').textContent = 'backend sin respuesta'; }
+  try {
+    const { casos } = await (await fetch('/api/casos')).json();
+    const ul = $('casos');
+    for (const c of casos) {
+      const li = el('li'); const b = el('button', undefined, c); b.type = 'button';
+      b.addEventListener('click', () => { texto.value = `Procesa la solicitud "${c}". Muéstrame la OC como quedaría en SAP, qué validaciones pasó y cuáles no, y no la crees hasta que yo lo confirme.`; texto.focus(); });
+      li.append(b); ul.append(li);
+    }
+  } catch { /* casos no disponibles */ }
+  if (sesionPrevia) await restaurar();
+}
+
+form.addEventListener('submit', (e) => { e.preventDefault(); mandar(texto.value); });
+texto.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); mandar(texto.value); } });
+$('nueva').addEventListener('click', () => { nuevaSesion(); mensajes.replaceChildren(); confirmacion.hidden = true; });
+iniciar();

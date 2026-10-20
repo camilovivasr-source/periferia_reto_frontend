@@ -1,14 +1,49 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Control de compras · Reto 03</title><link rel="stylesheet" href="/styles.css"><script src="/app.js" defer></script></head>
-<body><header><div class="brand"><span class="mark">OC</span><div><b>Control de compras</b><small>Agente SAP · laboratorio de evaluación</small></div></div><div class="header-right"><span id="mode" class="pill">Conectando…</span><button id="login-open" class="secondary">Acceso revisor</button></div></header>
-<main><section class="workspace"><div class="section-head"><div><span class="eyebrow">01 / INTERACCIÓN</span><h1>Solicitud y conversación</h1></div><span class="live-dot">Controles verificables</span></div>
-<div class="selector"><label for="case">Solicitud</label><select id="case"><option value="">Selecciona un caso</option></select><button id="validate">Validar</button><button id="create" class="secondary">Crear OC</button></div>
-<div id="summary" class="card"><p class="muted">Selecciona una solicitud para ver sus datos y evidencias.</p></div>
-<div id="decision" class="card decision" hidden><div class="section-head"><h2>Decisión humana</h2><span id="reviewer" class="pill"></span></div><p id="decision-note"></p><label for="reason">Justificación (mínimo 10 caracteres)</label><textarea id="reason" rows="2" maxlength="2000" placeholder="Describe la evidencia que sustenta tu decisión"></textarea><div class="actions"><button id="approve">Aprobar dentro de mi autoridad</button><button id="reject" class="danger">Rechazar solicitud</button></div></div>
-<div id="log" class="chat-log" role="log" aria-live="polite"><div class="welcome"><b>Consulta, valida y crea con evidencia.</b><p>El modelo utiliza herramientas. El backend aplica los controles. Ninguna acción humana puede omitir la autoridad configurada.</p></div></div>
-<form id="form"><input id="input" aria-label="Mensaje" placeholder="Ej.: valida sol-001 y explica los controles" required><button id="send">Enviar</button></form><p class="footnote">Datos educativos hasta incorporar el PRD. Este entorno simula SAP; no ejecuta BAPI ni OData.</p></section>
-<aside class="telemetry"><div class="section-head"><div><span class="eyebrow">02 / AUDITORÍA</span><h2>Decisión y ejecución</h2></div><span id="status" class="pill">Sin solicitud</span></div>
-<section class="card"><h3>Ruta de controles</h3><ol id="controls" class="controls"><li class="muted">Aún no hay controles evaluados.</li></ol></section>
-<section class="card"><div class="section-head"><h3>Herramientas en vivo</h3><span id="tool-count" class="counter">0</span></div><div id="tools" class="tool-list"><p class="muted">Verás el inicio, duración, argumentos y resultado de cada llamada real.</p></div></section>
-<section class="card"><h3>Registro SAP simulado</h3><div id="sap" class="muted">Sin orden registrada.</div></section><section class="card"><h3>Historial persistido</h3><div id="audit" class="muted">Sin decisiones humanas registradas.</div></section></aside></main>
-<dialog id="login-dialog"><form id="login-form"><h2>Acceso de revisor</h2><p>Operador configurado por el despliegue. No sustituye el SSO corporativo.</p><label for="code">Código de acceso</label><input id="code" type="password" autocomplete="current-password" required><p id="login-error" role="alert"></p><div class="actions"><button>Entrar</button><button id="login-close" type="button" class="secondary">Cancelar</button></div></form></dialog></body></html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agente de órdenes de compra</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="barra">
+    <div>
+      <h1>Agente de órdenes de compra</h1>
+      <p class="sub">Periferia IT Group · SAP simulado · Reto 3</p>
+    </div>
+    <div class="estado">
+      <span id="modo" class="chip" title="Proveedor del modelo">conectando…</span>
+      <button id="nueva" class="secundario" type="button">Nueva sesión</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="casos" aria-label="Casos disponibles">
+      <h2>Solicitudes</h2>
+      <p class="ayuda">Un clic escribe la instrucción en el chat.</p>
+      <ul id="casos"></ul>
+      <details class="guia">
+        <summary>Cómo funciona</summary>
+        <ol>
+          <li>El agente lee el paquete y aplica los controles RC1–RC10.</li>
+          <li>Lo bloqueado no se crea, aunque insistas.</li>
+          <li>Si hay excepciones, te pregunta y espera tu <strong>confirmo</strong>.</li>
+          <li>Cada llamada a herramienta se ve en el chat.</li>
+        </ol>
+      </details>
+    </aside>
+
+    <section class="chat" aria-label="Conversación">
+      <div id="mensajes" class="mensajes" role="log" aria-live="polite"></div>
+      <div id="confirmacion" class="confirmacion" hidden role="alert"></div>
+      <form id="form" class="entrada" autocomplete="off">
+        <label class="solo-lector" for="texto">Mensaje</label>
+        <textarea id="texto" rows="2" maxlength="4000" placeholder='Escribe, por ejemplo: Procesa la solicitud "sol-004". No la crees hasta que yo lo confirme.' required></textarea>
+        <button id="enviar" type="submit">Enviar</button>
+      </form>
+    </section>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
