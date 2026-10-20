@@ -1,6 +1,6 @@
 # Despliegue
 
-El frontend se despliega junto con el backend. Las instrucciones y los scripts (`infra/migrar.sh`, `setup-manual.sh`, `deploy-manual.sh`) están en el repositorio **periferia_reto_backend**, en `INSTRUCTIVO_CLOUD_RUN.md`.
+El frontend se despliega junto con el backend. Las instrucciones y los scripts (`instalar.sh`) están en el repositorio **periferia_reto_backend**, en `INSTRUCTIVO_CLOUD_RUN.md`.
 
 Si solo necesitas redesplegar el frontend:
 
