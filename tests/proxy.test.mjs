@@ -33,7 +33,7 @@ describe('Proxy del frontend', () => {
     assert.equal(r.status, 200);
     assert.match(await r.text(), /Agente de órdenes de compra/);
     assert.match(r.headers.get('content-security-policy'), /script-src 'self'/);
-    for (const a of ['/app.js', '/markdown.js', '/cards.js', '/api.js', '/dom.js', '/sesion.js', '/vista-casos.js', '/vista-chat.js', '/avisos.js', '/analisis/index.js', '/analisis/graficos.js', '/analisis/panel.js', '/analisis/desvio.js', '/analisis/conciliacion.js', '/analisis/simulador.js', '/analisis/autoridad.js', '/styles.css']) assert.equal((await fetch(base + a)).status, 200, a);
+    for (const a of ['/app.js', '/markdown.js', '/cards.js', '/api.js', '/dom.js', '/sesion.js', '/vista-casos.js', '/vista-chat.js', '/avisos.js', '/nueva-solicitud.js', '/analisis/index.js', '/analisis/graficos.js', '/analisis/panel.js', '/analisis/desvio.js', '/analisis/conciliacion.js', '/analisis/simulador.js', '/analisis/autoridad.js', '/styles.css']) assert.equal((await fetch(base + a)).status, 200, a);
   });
 
   it('health propio y salud del backend por proxy', async () => {
@@ -56,6 +56,9 @@ describe('Proxy del frontend', () => {
     const r = await fetch(base + '/api/analisis/simular', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ caso: 'sol-004', cambios: { valor_total: 1 } }) });
     assert.equal((await r.json()).ruta, '/api/analisis/simular');
     assert.equal((await fetch(base + '/api/exportar/carga-sap.csv')).status, 200);
+    assert.equal((await (await fetch(base + '/api/opciones')).json()).ruta, '/api/opciones');
+    const alta = await fetch(base + '/api/solicitudes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    assert.equal((await alta.json()).ruta, '/api/solicitudes');
   });
 
   it('no expone rutas que no son del chat ni acepta otros origenes', async () => {

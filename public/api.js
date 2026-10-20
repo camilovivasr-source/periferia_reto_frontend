@@ -59,3 +59,13 @@ export async function simular(caso, cambios) {
   if (!r.ok) throw new Error(cuerpo.detalles?.join('; ') || cuerpo.error || `Error HTTP ${r.status}`);
   return cuerpo;
 }
+
+// ── Solicitudes nuevas ──
+export const consultarOpciones = () => json('/api/opciones');
+
+export async function registrarSolicitud(cuerpo) {
+  const r = await fetch('/api/solicitudes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) });
+  const datos = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(datos.detalles?.join('; ') || datos.error || `Error HTTP ${r.status}`);
+  return datos;
+}

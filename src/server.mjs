@@ -23,6 +23,7 @@ const activos = {
   '/': ['public/index.html', 'text/html'],
   '/app.js': ['public/app.js', 'text/javascript'],
   '/cards.js': ['public/cards.js', 'text/javascript'],
+  '/nueva-solicitud.js': ['public/nueva-solicitud.js', 'text/javascript'],
   '/markdown.js': ['public/markdown.js', 'text/javascript'],
   '/dom.js': ['public/dom.js', 'text/javascript'],
   '/sesion.js': ['public/sesion.js', 'text/javascript'],
@@ -36,6 +37,7 @@ const activos = {
 /** Lista cerrada de rutas que el proxy reenvia al backend (metodo + ruta). Devuelve la ruta destino o null. */
 const SOLO_LECTURA = [
   /^\/api\/casos$/,
+  /^\/api\/opciones$/,
   /^\/api\/control\.csv$/,
   /^\/api\/archivos\/sol-\d{3}\/(aprobacion\.pdf|aprobacion\.txt|trazabilidad\.json)$/,
   /^\/api\/sessions\/[A-Za-z0-9_-]{8,64}$/,
@@ -43,7 +45,7 @@ const SOLO_LECTURA = [
   /^\/api\/analisis\/caso\/sol-\d{3}$/,
   /^\/api\/exportar\/carga-sap\.csv$/,
 ];
-const ESCRITURA = [/^\/api\/chat$/, /^\/api\/analisis\/simular$/];
+const ESCRITURA = [/^\/api\/chat$/, /^\/api\/analisis\/simular$/, /^\/api\/solicitudes$/];
 
 const rutaApi = (method, url) => {
   const { pathname, search } = new URL(url, 'http://local');

@@ -31,7 +31,7 @@
   <div id="vista-asistente" class="layout" role="tabpanel" aria-labelledby="tab-asistente">
     <aside class="panel casos" aria-label="Solicitudes">
       <div class="panel-cab">
-        <h2>Solicitudes</h2>
+        <div class="panel-titulo"><h2>Solicitudes</h2><button id="nueva-solicitud" class="boton-enlace" type="button">+ Nueva</button></div>
         <p class="ayuda">Estado actual según los controles. Pulsa «Procesar» para que el agente las revise.</p>
       </div>
       <div id="resumen" class="resumen" aria-live="polite"></div>
@@ -69,6 +69,7 @@
     <nav id="analisis-nav" class="sub-tabs panel" role="tablist" aria-label="Herramientas de análisis"></nav>
     <section id="analisis-contenido" class="analisis-contenido" aria-live="polite"></section>
   </div>
+  <dialog id="dialogo-solicitud" class="dialogo" aria-label="Nueva solicitud"></dialog>
   <script type="module" src="/app.js"></script>
 </body>
 </html>

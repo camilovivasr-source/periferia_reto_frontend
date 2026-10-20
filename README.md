@@ -5,6 +5,7 @@ Chat en HTML/JS sin dependencias de build, servido por un proxy mínimo de Node 
 - cada **llamada a herramienta** (nombre, argumentos, resultado resumido y detalle desplegable), en vivo por SSE;
 - un **banner de confirmación resaltado** cuando el agente pide confirmar excepciones, con botones "Confirmo" / "No, cancelar" (envían un mensaje inequívoco al chat);
 - **tarjetas estructuradas** generadas a partir de los resultados de las herramientas: controles RC (✓/!/✕ con su motivo), la OC como quedaría en SAP (proveedor, posiciones, base/IVA/total, excepciones), resultado de la creación con el número de OC y descargas de evidencia (PDF/TXT) y trazabilidad;
+- **registro de solicitudes nuevas** (botón «+ Nueva»): formulario con solicitud, cotización, aprobación y factura opcionales; al guardar, el agente la procesa;
 - barra lateral con el **estado de cada solicitud** según los controles y contadores;
 - **respuestas rápidas** según el estado de la conversación;
 - una segunda pestaña, **Análisis**, con cinco herramientas de solo lectura: panel de control (KPIs, bitácora, exportación de carga masiva SAP), desvío de proceso (retroactivas y línea de tiempo), conciliación documental, simulador de controles («¿qué pasaría si…?») y autoridad de aprobación;
@@ -20,6 +21,7 @@ Chat en HTML/JS sin dependencias de build, servido por un proxy mínimo de Node 
 | `sesion.js` | Identificador de sesión |
 | `vista-chat.js` | Mensajes: usuario, agente (pasos, tarjetas, texto) |
 | `vista-casos.js` | Barra lateral de solicitudes |
+| `nueva-solicitud.js` | Diálogo de registro de una solicitud nueva |
 | `avisos.js` | Banner de confirmación y respuestas rápidas |
 | `cards.js` | Tarjetas de controles, OC, resultado, casos y control |
 | `analisis/` | Pestaña Análisis: `index` (navegación), `panel`, `desvio`, `conciliacion`, `simulador`, `autoridad` y `graficos` (barras, línea de tiempo SVG, tablas; sin librerías) |

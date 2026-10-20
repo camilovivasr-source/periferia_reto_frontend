@@ -1,4 +1,5 @@
-import { consultarCasos, consultarHistorial, consultarSalud, enviarTurno } from './api.js';
+import { consultarCasos, consultarHistorial, consultarOpciones, consultarSalud, enviarTurno, registrarSolicitud } from './api.js';
+import { crearDialogoSolicitud } from './nueva-solicitud.js';
 import { ocultarAvisos, pintarConfirmacion, pintarSugerencias } from './avisos.js';
 import { el } from './dom.js';
 import { iniciarAnalisis } from './analisis/index.js';
@@ -106,6 +107,16 @@ function mostrarPestana(nombre) {
   if (esAnalisis) analisis.abrir();
   else refrescarCasos();
 }
+// ── nueva solicitud ──
+const dialogoSolicitud = crearDialogoSolicitud({
+  cargarOpciones: consultarOpciones,
+  registrar: registrarSolicitud,
+  alRegistrar: (r) => {
+    mostrarPestana('asistente');
+    mandar(`Registré la solicitud ${r.caso} (${r.solicitud_id}). Procésala: muéstrame la OC como quedaría en SAP y qué controles pasó, y no la crees hasta que yo lo confirme.`);
+  },
+});
+$('nueva-solicitud').addEventListener('click', () => dialogoSolicitud.abrir());
 $('tab-asistente').addEventListener('click', () => mostrarPestana('asistente'));
 $('tab-analisis').addEventListener('click', () => mostrarPestana('analisis'));
 iniciar();
