@@ -3,47 +3,63 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>Agente de órdenes de compra</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+  <a class="saltar" href="#texto">Ir al mensaje</a>
   <header class="barra">
-    <div>
-      <h1>Agente de órdenes de compra</h1>
-      <p class="sub">Periferia IT Group · SAP simulado · Reto 3</p>
+    <div class="marca">
+      <span class="logo" aria-hidden="true">OC</span>
+      <div>
+        <h1>Agente de órdenes de compra</h1>
+        <p class="sub">Periferia IT Group · SAP simulado</p>
+      </div>
     </div>
-    <div class="estado">
+    <div class="acciones-barra">
       <span id="modo" class="chip" title="Proveedor del modelo">conectando…</span>
-      <button id="nueva" class="secundario" type="button">Nueva sesión</button>
+      <a id="ver-control" class="boton secundario" href="/api/control.csv" download>control.csv</a>
+      <button id="nueva" class="boton secundario" type="button">Nueva sesión</button>
     </div>
   </header>
 
-  <main class="layout">
-    <aside class="casos" aria-label="Casos disponibles">
-      <h2>Solicitudes</h2>
-      <p class="ayuda">Un clic escribe la instrucción en el chat.</p>
-      <ul id="casos"></ul>
+  <div class="layout">
+    <aside class="panel casos" aria-label="Solicitudes">
+      <div class="panel-cab">
+        <h2>Solicitudes</h2>
+        <p class="ayuda">Estado actual según los controles. Pulsa «Procesar» para que el agente las revise.</p>
+      </div>
+      <div id="resumen" class="resumen" aria-live="polite"></div>
+      <ul id="casos" class="lista-casos"></ul>
       <details class="guia">
         <summary>Cómo funciona</summary>
         <ol>
           <li>El agente lee el paquete y aplica los controles RC1–RC10.</li>
           <li>Lo bloqueado no se crea, aunque insistas.</li>
           <li>Si hay excepciones, te pregunta y espera tu <strong>confirmo</strong>.</li>
-          <li>Cada llamada a herramienta se ve en el chat.</li>
+          <li>Cada paso queda visible y descargable.</li>
         </ol>
       </details>
     </aside>
 
-    <section class="chat" aria-label="Conversación">
-      <div id="mensajes" class="mensajes" role="log" aria-live="polite"></div>
+    <main class="panel chat" aria-label="Conversación">
+      <div id="mensajes" class="mensajes" role="log" aria-live="polite" aria-relevant="additions">
+        <section id="bienvenida" class="bienvenida">
+          <h2>¿Qué compra revisamos hoy?</h2>
+          <p>Soy el agente de compras. Leo el paquete (solicitud, cotización, aprobación y factura), verifico los controles, te muestro la OC como quedaría en SAP y la creo cuando tú confirmes.</p>
+          <div id="ejemplos" class="ejemplos"></div>
+        </section>
+      </div>
       <div id="confirmacion" class="confirmacion" hidden role="alert"></div>
+      <div id="sugerencias" class="sugerencias" aria-label="Respuestas rápidas"></div>
       <form id="form" class="entrada" autocomplete="off">
         <label class="solo-lector" for="texto">Mensaje</label>
-        <textarea id="texto" rows="2" maxlength="4000" placeholder='Escribe, por ejemplo: Procesa la solicitud "sol-004". No la crees hasta que yo lo confirme.' required></textarea>
-        <button id="enviar" type="submit">Enviar</button>
+        <textarea id="texto" rows="1" maxlength="4000" placeholder="Escribe tu mensaje… (Enter envía, Shift+Enter salta de línea)" required></textarea>
+        <button id="enviar" class="boton" type="submit">Enviar</button>
       </form>
-    </section>
-  </main>
+    </main>
+  </div>
   <script type="module" src="/app.js"></script>
 </body>
 </html>

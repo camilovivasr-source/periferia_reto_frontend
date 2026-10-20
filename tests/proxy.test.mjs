@@ -33,7 +33,7 @@ describe('Proxy del frontend', () => {
     assert.equal(r.status, 200);
     assert.match(await r.text(), /Agente de órdenes de compra/);
     assert.match(r.headers.get('content-security-policy'), /script-src 'self'/);
-    for (const a of ['/app.js', '/markdown.js', '/styles.css']) assert.equal((await fetch(base + a)).status, 200, a);
+    for (const a of ['/app.js', '/markdown.js', '/cards.js', '/api.js', '/dom.js', '/sesion.js', '/vista-casos.js', '/vista-chat.js', '/avisos.js', '/styles.css']) assert.equal((await fetch(base + a)).status, 200, a);
   });
 
   it('health propio y salud del backend por proxy', async () => {

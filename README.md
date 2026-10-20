@@ -4,8 +4,24 @@ Chat en HTML/JS sin dependencias de build, servido por un proxy mínimo de Node 
 
 - cada **llamada a herramienta** (nombre, argumentos, resultado resumido y detalle desplegable), en vivo por SSE;
 - un **banner de confirmación resaltado** cuando el agente pide confirmar excepciones, con botones "Confirmo" / "No, cancelar" (envían un mensaje inequívoco al chat);
+- **tarjetas estructuradas** generadas a partir de los resultados de las herramientas: controles RC (✓/!/✕ con su motivo), la OC como quedaría en SAP (proveedor, posiciones, base/IVA/total, excepciones), resultado de la creación con el número de OC y descargas de evidencia (PDF/TXT) y trazabilidad;
+- barra lateral con el **estado de cada solicitud** según los controles y contadores;
+- **respuestas rápidas** según el estado de la conversación;
 - respuestas con tablas y listas (render de Markdown seguro: nunca inserta HTML del modelo);
 - el modo del backend (modelo real o "modo práctica sin LLM").
+
+## Estructura (`public/`)
+
+| Módulo | Responsabilidad |
+|---|---|
+| `app.js` | Composición: eventos, turno de chat, arranque |
+| `api.js` | Cliente del backend (SSE del turno, casos, historial) |
+| `sesion.js` | Identificador de sesión |
+| `vista-chat.js` | Mensajes: usuario, agente (pasos, tarjetas, texto) |
+| `vista-casos.js` | Barra lateral de solicitudes |
+| `avisos.js` | Banner de confirmación y respuestas rápidas |
+| `cards.js` | Tarjetas de controles, OC, resultado, casos y control |
+| `markdown.js`, `dom.js` | Render seguro de Markdown y utilidades DOM (nunca `innerHTML`) |
 
 ## Local
 ```bash

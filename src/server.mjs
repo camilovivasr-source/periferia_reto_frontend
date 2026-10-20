@@ -21,12 +21,19 @@ const limites = new Map();
 const activos = {
   '/': ['public/index.html', 'text/html'],
   '/app.js': ['public/app.js', 'text/javascript'],
+  '/cards.js': ['public/cards.js', 'text/javascript'],
   '/markdown.js': ['public/markdown.js', 'text/javascript'],
+  '/dom.js': ['public/dom.js', 'text/javascript'],
+  '/sesion.js': ['public/sesion.js', 'text/javascript'],
+  '/api.js': ['public/api.js', 'text/javascript'],
+  '/vista-casos.js': ['public/vista-casos.js', 'text/javascript'],
+  '/vista-chat.js': ['public/vista-chat.js', 'text/javascript'],
+  '/avisos.js': ['public/avisos.js', 'text/javascript'],
   '/styles.css': ['public/styles.css', 'text/css'],
 };
 const rutaApi = (method, url) => {
   if (method === 'GET' && url === '/api/backend-health') return '/api/health';
-  if (method === 'GET' && (url === '/api/casos' || /^\/api\/sessions\/[A-Za-z0-9_-]{8,64}$/.test(url))) return url;
+  if (method === 'GET' && (url === '/api/casos' || url === '/api/control.csv' || /^\/api\/archivos\/sol-\d{3}\/(aprobacion\.pdf|aprobacion\.txt|trazabilidad\.json)$/.test(url) || /^\/api\/sessions\/[A-Za-z0-9_-]{8,64}$/.test(url))) return url;
   if (method === 'POST' && url === '/api/chat') return url;
   return null;
 };
@@ -86,7 +93,8 @@ export const server = createServer(async (req, res) => {
       ...(req.method === 'POST' ? { body: cuerpo } : {}),
       signal: AbortSignal.any([cancelar.signal, AbortSignal.timeout(110_000)]),
     });
-    res.writeHead(arriba.status, { 'Content-Type': arriba.headers.get('content-type') ?? 'application/json', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no' });
+    const disposicion = arriba.headers.get('content-disposition');
+    res.writeHead(arriba.status, { 'Content-Type': arriba.headers.get('content-type') ?? 'application/json', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no', ...(disposicion ? { 'Content-Disposition': disposicion } : {}) });
     if (arriba.body) for await (const trozo of arriba.body) if (!res.destroyed) res.write(trozo);
     res.end();
   } catch {
