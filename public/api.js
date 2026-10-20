@@ -69,3 +69,10 @@ export async function registrarSolicitud(cuerpo) {
   if (!r.ok) throw new Error(datos.detalles?.join('; ') || datos.error || `Error HTTP ${r.status}`);
   return datos;
 }
+
+export async function registrarCarpeta(carga) {
+  const r = await fetch('/api/solicitudes/carpeta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(carga) });
+  const datos = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(datos.detalles?.join('; ') || datos.error || `Error HTTP ${r.status}`);
+  return datos;
+}

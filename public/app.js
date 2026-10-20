@@ -1,4 +1,5 @@
-import { consultarCasos, consultarHistorial, consultarOpciones, consultarSalud, enviarTurno, registrarSolicitud } from './api.js';
+import { aviso, iniciarCarpeta } from './carpeta.js';
+import { consultarCasos, consultarHistorial, consultarOpciones, consultarSalud, enviarTurno, registrarSolicitud, registrarCarpeta } from './api.js';
 import { crearDialogoSolicitud } from './nueva-solicitud.js';
 import { ocultarAvisos, pintarConfirmacion, pintarSugerencias } from './avisos.js';
 import { el } from './dom.js';
@@ -107,6 +108,19 @@ function mostrarPestana(nombre) {
   if (esAnalisis) analisis.abrir();
   else refrescarCasos();
 }
+// ── subir carpeta ──
+iniciarCarpeta({
+  zona: $('zona-carpeta'),
+  selector: $('selector-carpeta'),
+  registrar: registrarCarpeta,
+  alRegistrar: (r) => {
+    refrescarCasos();
+    const nota = r.bloqueos.length ? `bloqueada (${r.bloqueos.map((b) => b.codigo).join(', ')})` : r.confirmaciones.length ? `requiere confirmación (${r.confirmaciones.map((c) => c.codigo).join(', ')})` : 'lista para crear';
+    aviso(`${r.caso} registrada: ${nota}. Ya aparece en la lista; pulsa «Procesar».`);
+  },
+  alError: (m) => aviso(m, 'error'),
+});
+
 // ── nueva solicitud ──
 const dialogoSolicitud = crearDialogoSolicitud({
   cargarOpciones: consultarOpciones,

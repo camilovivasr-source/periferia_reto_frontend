@@ -24,6 +24,7 @@ const activos = {
   '/app.js': ['public/app.js', 'text/javascript'],
   '/cards.js': ['public/cards.js', 'text/javascript'],
   '/nueva-solicitud.js': ['public/nueva-solicitud.js', 'text/javascript'],
+  '/carpeta.js': ['public/carpeta.js', 'text/javascript'],
   '/markdown.js': ['public/markdown.js', 'text/javascript'],
   '/dom.js': ['public/dom.js', 'text/javascript'],
   '/sesion.js': ['public/sesion.js', 'text/javascript'],
@@ -45,7 +46,7 @@ const SOLO_LECTURA = [
   /^\/api\/analisis\/caso\/sol-\d{3}$/,
   /^\/api\/exportar\/carga-sap\.csv$/,
 ];
-const ESCRITURA = [/^\/api\/chat$/, /^\/api\/analisis\/simular$/, /^\/api\/solicitudes$/];
+const ESCRITURA = [/^\/api\/chat$/, /^\/api\/analisis\/simular$/, /^\/api\/solicitudes$/, /^\/api\/solicitudes\/carpeta$/];
 
 const rutaApi = (method, url) => {
   const { pathname, search } = new URL(url, 'http://local');
@@ -89,7 +90,7 @@ export const server = createServer(async (req, res) => {
     const partes = [];
     for await (const parte of req) {
       tam += parte.length;
-      if (tam > 16_384) return enviar(413, { error: 'Entrada demasiado grande' });
+      if (tam > (destino === '/api/solicitudes/carpeta' ? 600_000 : 16_384)) return enviar(413, { error: 'Entrada demasiado grande' });
       partes.push(parte);
     }
     const cuerpo = Buffer.concat(partes);

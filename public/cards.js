@@ -30,7 +30,7 @@ function envoltura(doc, clase, titulo, subtitulo) {
 export function tarjetaControles(doc, d) {
   const veredicto = !d.apta ? 'No apta' : d.confirmaciones?.length ? 'Apta con confirmación' : 'Apta';
   const clase = !d.apta ? 'malo' : d.confirmaciones?.length ? 'aviso' : 'bueno';
-  const { t, cab } = envoltura(doc, `controles ${clase}`, 'Controles', d.solicitud_id);
+  const { t, cab } = envoltura(doc, `t-controles ${clase}`, 'Controles', d.solicitud_id);
   cab.append(el(doc, 'span', `sello ${clase}`, veredicto));
   const lista = el(doc, 'ul', 'controles-lista');
   for (const c of d.controles ?? []) {
@@ -67,7 +67,7 @@ export function enlacesEvidencia(doc, caso) {
 /** Resultado de oc_construir_payload: la OC como quedaria en SAP. */
 export function tarjetaOrden(doc, d, caso) {
   const p = d.payload;
-  const { t, cab } = envoltura(doc, 'orden', 'Orden de compra · borrador SAP', p.referencia?.solicitud_id);
+  const { t, cab } = envoltura(doc, 't-orden', 'Orden de compra · borrador SAP', p.referencia?.solicitud_id);
   cab.append(el(doc, 'span', 'sello neutro', `Sociedad ${p.sociedad} · Org. compras ${p.organizacion_compras}`));
   const datos = el(doc, 'dl', 'datos');
   datos.append(
@@ -116,7 +116,7 @@ export function tarjetaOrden(doc, d, caso) {
 export function tarjetaResultado(doc, llamada) {
   const r = llamada.resultado ?? {};
   if (llamada.ok) {
-    const { t } = envoltura(doc, `resultado exito`, r.idempotente ? 'La OC ya existía' : 'OC creada en SAP');
+    const { t } = envoltura(doc, 't-resultado exito', r.idempotente ? 'La OC ya existía' : 'OC creada en SAP');
     const n = el(doc, 'div', 'numero-oc');
     n.append(el(doc, 'span', 'etiqueta', 'Número de OC'), el(doc, 'strong', null, r.numero_oc));
     t.append(n);
@@ -133,7 +133,7 @@ export function tarjetaResultado(doc, llamada) {
     return t;
   }
   const bloqueada = Array.isArray(r.bloqueos) && r.bloqueos.length;
-  const { t } = envoltura(doc, `resultado ${bloqueada ? 'malo' : 'aviso'}`, bloqueada ? 'No se creó la OC' : 'Falta tu confirmación');
+  const { t } = envoltura(doc, `t-resultado ${bloqueada ? 'malo' : 'aviso'}`, bloqueada ? 'No se creó la OC' : 'Falta tu confirmación');
   t.append(el(doc, 'p', 'nota', r.error ?? ''));
   return t;
 }
@@ -145,7 +145,7 @@ export const claseEstado = (e) => CLASE_ESTADO[e] ?? 'neutro';
 
 /** Resultado de oc_listar_casos. */
 export function tarjetaCasos(doc, casos) {
-  const { t } = envoltura(doc, 'casos', 'Solicitudes', `${casos.length} casos`);
+  const { t } = envoltura(doc, 't-casos', 'Solicitudes', `${casos.length} casos`);
   const tabla = el(doc, 'table', 'mini');
   const cab = el(doc, 'tr');
   for (const h of ['Caso', 'Proveedor', 'Valor', 'Estado']) cab.append(el(doc, 'th', null, h));
@@ -165,7 +165,7 @@ export function tarjetaCasos(doc, casos) {
 
 /** Resultado de oc_resumen_control. */
 export function tarjetaControl(doc, d) {
-  const { t } = envoltura(doc, 'control', 'Registro de control', d.ruta);
+  const { t } = envoltura(doc, 't-control', 'Registro de control', d.ruta);
   const tot = el(doc, 'div', 'totales');
   for (const [k, v] of [['Intentos', d.intentos], ['OC creadas', d.oc_creadas.length], ['Retroactivas', `${d.oc_retroactivas} (${d.porcentaje_retroactivas} %)`]]) {
     const c = el(doc, 'div', 'total');

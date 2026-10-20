@@ -31,8 +31,14 @@
   <div id="vista-asistente" class="layout" role="tabpanel" aria-labelledby="tab-asistente">
     <aside class="panel casos" aria-label="Solicitudes">
       <div class="panel-cab">
-        <div class="panel-titulo"><h2>Solicitudes</h2><button id="nueva-solicitud" class="boton-enlace" type="button">+ Nueva</button></div>
+        <div class="panel-titulo"><h2>Solicitudes</h2><button id="nueva-solicitud" class="boton-enlace" type="button" title="Capturar una solicitud con un formulario">+ Formulario</button></div>
         <p class="ayuda">Estado actual según los controles. Pulsa «Procesar» para que el agente las revise.</p>
+      </div>
+      <div id="zona-carpeta" class="zona-carpeta" role="button" tabindex="0" aria-label="Subir carpeta de una solicitud">
+        <span class="zona-icono" aria-hidden="true">⬆</span>
+        <strong>Suelta aquí la carpeta de la solicitud</strong>
+        <small>o haz clic para elegirla · solicitud.json, cotizacion.txt, aprobacion.json…</small>
+        <input id="selector-carpeta" type="file" webkitdirectory multiple hidden>
       </div>
       <div id="resumen" class="resumen" aria-live="polite"></div>
       <ul id="casos" class="lista-casos"></ul>

@@ -76,3 +76,14 @@ describe('Tarjetas', () => {
 
   it('helpers', () => { assert.equal(dinero(1000, 'COP'), 'COP 1.000'); assert.equal(nombrePaso('oc_validar'), 'Validar'); });
 });
+
+describe('Aislamiento de estilos', () => {
+  it('las tarjetas no reutilizan clases de otros componentes (.control, .casos, .caso)', () => {
+    const k = tarjetaPara(document, { nombre: 'oc_resumen_control', ok: true, args: {}, resultado: { intentos: 0, oc_creadas: [], oc_retroactivas: 0, porcentaje_retroactivas: 0, ruta: 'out/control.csv' } });
+    const c = tarjetaPara(document, { nombre: 'oc_listar_casos', ok: true, args: {}, resultado: [] });
+    for (const t of [k, c]) {
+      assert.ok(!t.classList.contains('control') && !t.classList.contains('casos'), t.className);
+    }
+    assert.ok(k.classList.contains('t-control') && c.classList.contains('t-casos'));
+  });
+});
