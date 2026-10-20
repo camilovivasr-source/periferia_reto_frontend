@@ -1,6 +1,7 @@
 import { consultarCasos, consultarHistorial, consultarSalud, enviarTurno } from './api.js';
 import { ocultarAvisos, pintarConfirmacion, pintarSugerencias } from './avisos.js';
 import { el } from './dom.js';
+import { iniciarAnalisis } from './analisis/index.js';
 import { crearSesion } from './sesion.js';
 import { pintarCasos } from './vista-casos.js';
 import { MensajeAgente, agregarUsuario, bajar, limpiarChat } from './vista-chat.js';
@@ -93,4 +94,18 @@ formulario.addEventListener('submit', (e) => { e.preventDefault(); mandar(texto.
 texto.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); mandar(texto.value); } });
 texto.addEventListener('input', autoajustar);
 $('nueva').addEventListener('click', () => { sesion.nueva(); limpiarChat(); ocultarAvisos(); texto.focus(); });
+
+// ── pestanas: Asistente / Analisis ──
+const analisis = iniciarAnalisis();
+function mostrarPestana(nombre) {
+  const esAnalisis = nombre === 'analisis';
+  $('vista-asistente').hidden = esAnalisis;
+  $('vista-analisis').hidden = !esAnalisis;
+  $('tab-asistente').setAttribute('aria-selected', String(!esAnalisis));
+  $('tab-analisis').setAttribute('aria-selected', String(esAnalisis));
+  if (esAnalisis) analisis.abrir();
+  else refrescarCasos();
+}
+$('tab-asistente').addEventListener('click', () => mostrarPestana('asistente'));
+$('tab-analisis').addEventListener('click', () => mostrarPestana('analisis'));
 iniciar();

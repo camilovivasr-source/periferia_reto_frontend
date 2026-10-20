@@ -18,6 +18,7 @@ const auth = new GoogleAuth();
 let clienteIam;
 const limites = new Map();
 
+const MODULOS_ANALISIS = ['index', 'graficos', 'panel', 'desvio', 'conciliacion', 'simulador', 'autoridad'];
 const activos = {
   '/': ['public/index.html', 'text/html'],
   '/app.js': ['public/app.js', 'text/javascript'],
@@ -29,13 +30,28 @@ const activos = {
   '/vista-casos.js': ['public/vista-casos.js', 'text/javascript'],
   '/vista-chat.js': ['public/vista-chat.js', 'text/javascript'],
   '/avisos.js': ['public/avisos.js', 'text/javascript'],
+  ...Object.fromEntries(MODULOS_ANALISIS.map((m) => [`/analisis/${m}.js`, [`public/analisis/${m}.js`, 'text/javascript']])),
   '/styles.css': ['public/styles.css', 'text/css'],
 };
+/** Lista cerrada de rutas que el proxy reenvia al backend (metodo + ruta). Devuelve la ruta destino o null. */
+const SOLO_LECTURA = [
+  /^\/api\/casos$/,
+  /^\/api\/control\.csv$/,
+  /^\/api\/archivos\/sol-\d{3}\/(aprobacion\.pdf|aprobacion\.txt|trazabilidad\.json)$/,
+  /^\/api\/sessions\/[A-Za-z0-9_-]{8,64}$/,
+  /^\/api\/analisis\/(panel|desvio|conciliacion|autoridad)$/,
+  /^\/api\/analisis\/caso\/sol-\d{3}$/,
+  /^\/api\/exportar\/carga-sap\.csv$/,
+];
+const ESCRITURA = [/^\/api\/chat$/, /^\/api\/analisis\/simular$/];
+
 const rutaApi = (method, url) => {
-  if (method === 'GET' && url === '/api/backend-health') return '/api/health';
-  if (method === 'GET' && (url === '/api/casos' || url === '/api/control.csv' || /^\/api\/archivos\/sol-\d{3}\/(aprobacion\.pdf|aprobacion\.txt|trazabilidad\.json)$/.test(url) || /^\/api\/sessions\/[A-Za-z0-9_-]{8,64}$/.test(url))) return url;
-  if (method === 'POST' && url === '/api/chat') return url;
-  return null;
+  const { pathname, search } = new URL(url, 'http://local');
+  if (method === 'GET' && pathname === '/api/backend-health') return '/api/health';
+  const permitidas = method === 'GET' ? SOLO_LECTURA : method === 'POST' ? ESCRITURA : [];
+  if (!permitidas.some((re) => re.test(pathname))) return null;
+  // Solo la consulta de autoridad lleva parametros; el resto se reenvia sin query.
+  return pathname === '/api/analisis/autoridad' ? pathname + search : pathname;
 };
 
 export const server = createServer(async (req, res) => {

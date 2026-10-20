@@ -17,6 +17,10 @@
         <p class="sub">Periferia IT Group · SAP simulado</p>
       </div>
     </div>
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button id="tab-asistente" class="tab" role="tab" type="button" aria-selected="true" aria-controls="vista-asistente">Asistente</button>
+      <button id="tab-analisis" class="tab" role="tab" type="button" aria-selected="false" aria-controls="vista-analisis">Análisis</button>
+    </nav>
     <div class="acciones-barra">
       <span id="modo" class="chip" title="Proveedor del modelo">conectando…</span>
       <a id="ver-control" class="boton secundario" href="/api/control.csv" download>control.csv</a>
@@ -24,7 +28,7 @@
     </div>
   </header>
 
-  <div class="layout">
+  <div id="vista-asistente" class="layout" role="tabpanel" aria-labelledby="tab-asistente">
     <aside class="panel casos" aria-label="Solicitudes">
       <div class="panel-cab">
         <h2>Solicitudes</h2>
@@ -59,6 +63,11 @@
         <button id="enviar" class="boton" type="submit">Enviar</button>
       </form>
     </main>
+  </div>
+
+  <div id="vista-analisis" class="layout-analisis" role="tabpanel" aria-labelledby="tab-analisis" hidden>
+    <nav id="analisis-nav" class="sub-tabs panel" role="tablist" aria-label="Herramientas de análisis"></nav>
+    <section id="analisis-contenido" class="analisis-contenido" aria-live="polite"></section>
   </div>
   <script type="module" src="/app.js"></script>
 </body>

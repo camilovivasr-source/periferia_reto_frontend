@@ -47,3 +47,15 @@ export async function enviarTurno(sessionId, message, alEvento) {
   if (!final) throw new Error('La respuesta se cortó antes de terminar. Intenta de nuevo.');
   return final;
 }
+
+// ── Analisis (solo lectura; la simulacion ocurre en memoria del servidor) ──
+export const consultarAnalisis = (nombre) => json(`/api/analisis/${nombre}`);
+export const consultarDetalleCaso = (caso) => json(`/api/analisis/caso/${encodeURIComponent(caso)}`);
+export const consultarAutoridad = (centro, monto) => json(`/api/analisis/autoridad?centro=${encodeURIComponent(centro)}&monto=${encodeURIComponent(monto)}`);
+
+export async function simular(caso, cambios) {
+  const r = await fetch('/api/analisis/simular', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ caso, cambios }) });
+  const cuerpo = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(cuerpo.detalles?.join('; ') || cuerpo.error || `Error HTTP ${r.status}`);
+  return cuerpo;
+}
