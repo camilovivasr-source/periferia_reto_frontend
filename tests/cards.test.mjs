@@ -87,3 +87,12 @@ describe('Aislamiento de estilos', () => {
     assert.ok(k.classList.contains('t-control') && c.classList.contains('t-casos'));
   });
 });
+
+describe('Clases de estado reutilizables', () => {
+  it('ningun selector global .aviso/.toast se mezcla: el aviso flotante usa .toast', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const css = await readFile(new URL('../public/styles.css', import.meta.url), 'utf8');
+    assert.ok(!/^\.aviso\s*\{/m.test(css), '.aviso no debe ser la clase del toast (choca con .nota.aviso, .sello.aviso, .kpi.aviso…)');
+    assert.match(css, /^\.toast\s*\{[^}]*position: fixed/m);
+  });
+});

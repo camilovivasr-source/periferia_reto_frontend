@@ -52,7 +52,7 @@ export function iniciarCarpeta({ zona, selector, registrar, alRegistrar, alError
 
 /** Aviso temporal no bloqueante. */
 export function aviso(texto, tipo = 'ok') {
-  const t = el('div', `aviso ${tipo}`, texto);
+  const t = el('div', `toast ${tipo}`, texto);
   t.setAttribute('role', 'status');
   document.body.append(t);
   setTimeout(() => t.remove(), 6500);

@@ -261,8 +261,8 @@ h1 { font-size: 1.02rem; letter-spacing: -.01em; }
 .pasos { border-radius: 12px; background: #fff; }
 .sub-tab { border-radius: 12px; transition: all .15s; } .sub-tab[aria-selected="true"] { background: var(--primario-suave); border-color: #c9d4ff; box-shadow: inset 3px 0 0 var(--primario); }
 .dialogo { border-radius: 20px; box-shadow: 0 30px 80px -20px rgba(15, 23, 41, .45); }
-.aviso { position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 20; max-width: min(420px, 92vw); padding: .75rem 1rem; border-radius: 14px; background: #0f1729; color: #fff; font-size: .88rem; box-shadow: var(--sombra-alta); animation: entra .25s ease; }
-.aviso.error { background: #b42318; }
-.aviso.ok::before { content: "✓ "; color: #6ce9a6; font-weight: 700; }
+.toast { position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 20; max-width: min(420px, 92vw); padding: .75rem 1rem; border-radius: 14px; background: #0f1729; color: #fff; font-size: .88rem; box-shadow: var(--sombra-alta); animation: entra .25s ease; }
+.toast.error { background: #b42318; }
+.toast.ok::before { content: "✓ "; color: #6ce9a6; font-weight: 700; }
 ::selection { background: rgba(59, 91, 253, .22); }
 * { scrollbar-width: thin; scrollbar-color: #cdd5ea transparent; }
